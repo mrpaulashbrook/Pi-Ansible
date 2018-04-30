@@ -1,0 +1,50 @@
+---
+- hosts: raspberry-cam
+  gather_facts: yes
+  vars:
+    boot_config_options:
+      # Set the GPU memory split value. 128 in the minimum for the camera
+      - regexp: "^#?gpu_mem"
+        line: "gpu_mem=128"
+
+      # Enable Camera
+      - regexp: "^#?start_x"
+        line: "start_x=1"
+
+      # Disable Camera LED 1 is disabled, 0 is enabled
+      - regexp: "^#?disable_camera_led"
+        line: "disable_camera_led=0"
+
+  tasks:
+    # Run apt-get update and apt-get upgrade 
+    # Update apt packages
+    - name: Update apt packages
+      become: yes
+      apt: 
+        update_cache=yes
+
+    # Upgrade apt packages
+    - name: Upgrade apt packages
+      become: yes
+      apt: 
+        upgrade=dist
+
+    - name: Install dependancies from apt
+      become: yes
+      apt: name={{item}} state=installed
+      with_items:
+        - motion
+        - screen
+
+    - name: Modprobe driver
+      become: yes
+      modprobe:
+        name: 8021q
+        state: present
+
+    - name: Setup camera 
+      become: yes
+      lineinfile:
+        path: /etc/modules
+        state: present
+        line: bcm2835_v4l2

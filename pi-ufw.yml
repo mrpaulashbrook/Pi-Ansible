@@ -1,0 +1,46 @@
+---
+- hosts: raspberry
+  become: yes
+  gather_facts: yes
+
+  tasks:
+# Deny everything and enable UFW
+  - name: Default state
+    ufw:
+      state: enabled
+      policy: deny
+
+# Set logging
+  - name: Logging
+    ufw:
+      logging: on
+
+# ufw supports connection rate limiting, which is useful for protecting
+# against brute-force login attacks. ufw will deny connections if an IP
+# address has attempted to initiate 6 or more connections in the last
+# 30 seconds.
+  - name: Limit SSH
+    ufw:
+      rule: limit
+      port: ssh
+      proto: tcp
+
+# Allow OpenSSH.
+  - name: Allow SSH
+    ufw:
+      rule: allow
+      name: OpenSSH
+
+# Allow all access to tcp port 80:
+  - name: Allow Port 80
+    ufw:
+      rule: allow
+      port: 80
+      proto: tcp
+
+# Allow all access to tcp port 8081:
+  - name: Allow port 8081
+    ufw:
+      rule: allow
+      port: 8081
+      proto: tcp

@@ -1,0 +1,23 @@
+---
+- hosts: raspberry-cam
+  gather_facts: yes
+  tasks:
+    - name: Modprobe driver
+      become: yes
+      modprobe:
+        name: bcm2835_v4l2
+        state: present
+
+    - name: Setup camera - Make driver persistent
+      become: yes
+      lineinfile:
+        path: /etc/modules
+        state: present
+        line: bcm2835_v4l2
+
+    - name: Setup camera - Turn off LED
+      become: yes
+      lineinfile:
+        path: /boot/config.txt
+        state: present
+        line: disable_camera_led=1
